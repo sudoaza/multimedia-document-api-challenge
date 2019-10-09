@@ -1,0 +1,23 @@
+version: '2'
+
+# Define the services/containers to be run
+services:
+  api: #name of your service
+    build: ./ # specify the directory of the Dockerfile
+    restart: always
+    ports:
+      - "3000:3000" #specify ports forwarding
+    links:
+      - database # link this service to the database service
+    depends_on:
+      - database
+     
+  database: # name of the service
+    image: mongo # specify image to build container from
+    restart: always
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: docapi
+    ports:
+      - 27017:27017

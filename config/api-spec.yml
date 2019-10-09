@@ -1,0 +1,240 @@
+openapi: 3.0.0
+servers:
+  - url: 'http://localhost:3000/v1'
+info:
+  description: 'Documents API. Create and retrieve documents containing multimedia components.'
+  version: 1.0.0
+  title: Documents API
+tags:
+  - name: document
+    description: About multimedia documents.
+paths:
+  /documents:
+    post:
+      summary: Create document
+      description: Allows for the creation of new documents.
+      responses:
+        '200':
+          description: Document created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Document had errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        $ref: '#/components/requestBodies/Document'
+    get:
+      summary: Get all documents
+      description: Allows to retrieve all created documents
+      responses:
+        '200':
+          description: Returns all found documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuccessResponse'
+  '/documents/:id':
+    get:
+      summary: ''
+      description: ''
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      operationId: ''
+      responses:
+        '200':
+          description: Returns the found document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: The document was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Video:
+      type: object
+      required:
+        - type
+        - source
+      properties:
+        type:
+          type: string
+          enum:
+            - 'video'
+        source:
+          type: string
+      xml:
+        name: video
+
+    Image:
+      type: object
+      required:
+        - type
+        - source
+      properties:
+        type:
+          type: string
+          enum:
+            - 'image'
+        source:
+          type: string
+        alt:
+          type: string
+        caption:
+          type: string
+      xml:
+        name: image
+
+    Text:
+      type: object
+      required:
+        - type
+        - content
+      properties:
+        type:
+            type: string
+            enum:
+              - 'text'
+        content:
+          type: string
+      xml:
+        name: text
+
+    FreeText:
+      type: object
+      required:
+        - type
+        - question
+      properties:
+        type:
+          type: string
+          enum:
+            - 'free-text'
+        question:
+          type: string
+        placeholder:
+          type: string
+
+    MultipleChoice:
+      type: object
+      required:
+        - type
+        - question
+        - answers
+      properties:
+        type:
+          type: string
+          enum:
+            - 'multiple-choice'
+        question:
+          type: string
+        answers:
+          type: array
+          minItems: 2
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/Choice'
+      xml:
+        name: multiple-choice
+
+    Choice:
+      type: object
+      required:
+        - label
+        - value
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+      xml:
+        name: choice
+
+    Document:
+      type: object
+      required:
+        - title
+        - body
+      properties:
+        title:
+          type: string
+        body:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/Video'
+              - $ref: '#/components/schemas/Image'
+              - $ref: '#/components/schemas/Text'
+              - $ref: '#/components/schemas/MultipleChoice'
+              - $ref: '#/components/schemas/FreeText'
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          anyOf:
+            - $ref: '#/components/schemas/Document'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+        errors:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Error'
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        errorCode:
+          type: string
+
+  requestBodies:
+    Document:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Document'
+      description: Document, composed of multimedia components.
+      required: true
+  securitySchemes:
+    token:
+      type: apiKey
+      name: Authorization
+      in: header
+  links: {}
+  callbacks: {}
+security: []
